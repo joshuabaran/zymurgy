@@ -1,5 +1,4 @@
 export function brixToSG(brix: number): number {
-  //return (brix * 4 / 1000) + 1;
   const sg = (brix / (258.6 - ((brix / 258.2) * 227.1))) + 1;
   return Number(sg.toFixed(3));
 }
