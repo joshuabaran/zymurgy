@@ -1,7 +1,7 @@
 {
   "name": "@jbaran/zymurgy",
   "version": "1.0.0",
-  "description": "A collection of utilities for estimating beer and wine firmentation",
+  "description": "A collection of utilities for estimating beer and wine fermentation",
   "scripts": {
     "build": "tsc",
     "test": "jest",
