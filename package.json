@@ -1,0 +1,25 @@
+{
+  "name": "@jbaran/zymurgy",
+  "version": "1.0.0",
+  "description": "A collection of utilities for estimating beer and wine firmentation",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "echo": "echo 123458"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joshuabaran/zymurgy.git"
+  },
+  "author": "Joshua Baran",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/joshuabaran/zymurgy/issues"
+  },
+  "homepage": "https://github.com/joshuabaran/zymurgy#readme",
+  "devDependencies": {
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.1.6"
+  }
+}
