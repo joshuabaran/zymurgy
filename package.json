@@ -1,6 +1,7 @@
 {
   "name": "@jbaran/zymurgy",
   "version": "1.0.2",
+  "main": "lib/index.js",
   "description": "A collection of utilities for estimating beer and wine fermentation",
   "scripts": {
     "build": "tsc",
