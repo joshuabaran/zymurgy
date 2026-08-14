@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/joshuabaran/zymurgy#readme",
   "devDependencies": {
-    "ts-jest": "^29.1.1",
-    "typescript": "^5.1.6"
+    "ts-jest": "^29.4.12",
+    "typescript": "^6.0.3"
   }
 }
