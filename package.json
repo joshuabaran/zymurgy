@@ -1,13 +1,28 @@
 {
   "name": "@jbaran/zymurgy",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "main": "./lib/index.js",
   "description": "A collection of utilities for estimating beer and wine fermentation",
   "scripts": {
     "build": "tsc",
-    "test": "jest",
-    "echo": "echo 123458"
+    "test": "jest"
   },
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "brew",
+    "beer",
+    "wine",
+    "fermentation",
+    "abv",
+    "brix",
+    "plato",
+    "hydrometer"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/joshuabaran/zymurgy.git"
