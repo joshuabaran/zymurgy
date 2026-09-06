@@ -37,6 +37,11 @@ Current public API:
 - `sgToPoints(sg)` / `pointsToSG(points)`
 - `abv(og, fg)` / `abvAlternate(og, fg)` / `apparentAttenuation(og, fg)`
 - `correctHydrometerSG(sg, sampleTempF, calibrationTempF = 60)`
+- `extractPercentToPPG(extractPercent)` / `fermentablePoints(amountLb, ppg)` / `predictedOG(fermentables, efficiencyPercent, batchGal)`
+- `predictedFG(og, attenuationPercent)`
+- `hopFormFactor(form)` / `whirlpoolTempFactor(tempF)` / `tinsethUtilization(preBoilSG, timeMin)` / `tinsethIBU(hops, preBoilSG, volumeL, hopUtilizationFactor?)`
+- `maltColorUnits(colorLovibond, amountLb, batchGal)` / `moreySRM(mcu)` / `srmToEBC(srm)`
+- `boilOffGal(rateGalPerHour, hours)` / `applyShrinkage(hotVolume, shrinkageFrac?)` / `undoShrinkage(coldVolume, shrinkageFrac?)` / `grainAbsorptionGal(grainLb, absorptionGalPerLb)` / `strikeTemperatureF(targetF, grainF, ratioQtPerLb)`
 
 Related conversions are not exact inverses at every tested point (e.g. `sgToBrix(1.179)` is `40.1`, not `40`; `sgToPlato(1.048)` is `11.9`). Do not “fix” that unless asked; update tests if you intentionally change rounding or the formula.
 

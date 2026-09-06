@@ -24,6 +24,12 @@ const {
   abvAlternate,
   apparentAttenuation,
   correctHydrometerSG,
+  predictedOG,
+  predictedFG,
+  tinsethIBU,
+  moreySRM,
+  maltColorUnits,
+  strikeTemperatureF,
 } = require('@jbaran/zymurgy');
 
 brixToSG(10);                      // 1.04
@@ -35,9 +41,14 @@ abv(1.050, 1.010);                 // 5.3
 abvAlternate(1.060, 1.012);        // 6.5
 apparentAttenuation(1.050, 1.010); // 80
 correctHydrometerSG(1.050, 80);    // 1.052  (80 °F sample, 60 °F hydrometer)
+predictedOG([{ amountLb: 10, ppg: 36 }], 75, 5); // 1.054
+predictedFG(1.050, 80);            // 1.01
+tinsethIBU([{ massG: 30, alphaAcidPercent: 6, timeMin: 60, use: 'boil', form: 'whole' }], 1.040, 20); // 22.7
+moreySRM(maltColorUnits(10, 8, 5)); // 10
+strikeTemperatureF(152, 70, 1.25); // 165.1
 ```
 
-These are brewing estimates, not lab-grade measurements. Specific gravity is rounded to 3 decimal places, Brix and Plato to 1, gravity points to the nearest integer, and ABV / attenuation to 1 decimal. Related conversions are not always exact inverses.
+These are brewing estimates, not lab-grade measurements. Specific gravity is rounded to 3 decimal places, Brix and Plato to 1, gravity points to the nearest integer, ABV / attenuation / IBU / SRM / EBC to 1 decimal, volumes to 3, and strike temperature to 1. Related conversions are not always exact inverses.
 
 ## API
 
@@ -140,6 +151,92 @@ Corrects a hydrometer reading for sample temperature. Temperatures are in °F. C
 | 1.050 | 60 °F  | 60  | 1.050     |
 | 1.050 | 68 °F  | 68  | 1.050     |
 | 1.050 | 80 °F  | 60  | 1.052     |
+
+### Predicted gravity
+
+#### `predictedOG(fermentables, efficiencyPercent, batchGal): number`
+
+Points / PPG method. Mash and steep grains use `efficiencyPercent`; late boil sugars (`lateAddition: true`) count at 100% efficiency. Divide by post-boil / into-fermentor `batchGal`.
+
+`PPG ≈ extractPercent / 100 × 46` (sucrose) when `ppg` is omitted. Explicit `ppg` wins if both are set.
+
+| Mash | Late sugar | Eff | Gal | OG    |
+|------|------------|-----|-----|-------|
+| —    | —          | 75  | 5   | 1.000 |
+| 10 lb × 36 PPG | — | 75 | 5 | 1.054 |
+| —    | 1 lb × 46 PPG | 0 | 5 | 1.009 |
+| 10 lb × 36 PPG | 1 lb × 46 PPG | 75 | 5 | 1.063 |
+| 10 lb × 80% extract | — | 75 | 5 | 1.055 |
+
+Related: `extractPercentToPPG(extractPercent)` and `fermentablePoints(amountLb, ppg)`.
+
+#### `predictedFG(og, attenuationPercent): number`
+
+`fg_points = og_points × (1 − attenuation%)`.
+
+| OG    | Attn | FG    |
+|-------|------|-------|
+| 1.050 | 0    | 1.050 |
+| 1.050 | 80   | 1.010 |
+| 1.060 | 70   | 1.018 |
+| 1.080 | 75   | 1.020 |
+
+### IBU
+
+Tinseth (1997). **`preBoilSG` is pre-boil specific gravity** (Brewfather-like) — not mid-boil or predicted OG. Dry hop contributes **0 IBU**.
+
+Form factors are explicit: `pellet` 1.1, `whole` 1.0, `plug` 1.02 (BeerSmith-style), **`cryo` = pellet 1.1** for MVP (Cryo already carries higher AA% on the label). Default form is `pellet`. Optional `hopUtilizationFactor` (default `1`) is an equipment multiplier.
+
+Whirlpool / hopstand: Tinseth time factor at contact minutes × a **linear** temp factor (`1.0` at `212°F`, `0.15` at `170°F`, clamp outside that band).
+
+#### `tinsethIBU(hops, preBoilSG, volumeL, hopUtilizationFactor?): number`
+
+Mass in grams, volume in liters, alpha acid as a percent (e.g. `6`), whirlpool temperature in °F.
+
+| Addition | Pre-boil | L  | IBU |
+|----------|----------|----|-----|
+| 30 g, 6% AA, 60 min boil, whole | 1.040 | 20 | 22.7 |
+| same, pellet | 1.040 | 20 | 25 |
+| 30 g, 6% AA, 20 min whirlpool @ 212 °F, whole | 1.040 | 20 | 13.8 |
+| same whirlpool @ 170 °F | 1.040 | 20 | 2.1 |
+| dry hop | 1.040 | 20 | 0 |
+
+Related: `tinsethUtilization(preBoilSG, timeMin)`, `whirlpoolTempFactor(tempF)`, `hopFormFactor(form)`.
+
+### Color
+
+#### `maltColorUnits(colorLovibond, amountLb, batchGal): number` / `moreySRM(mcu): number`
+
+`MCU = (°L × lb) / gal`. Morey: `SRM = 1.4922 × MCU^0.6859`.
+
+| MCU | SRM  |
+|-----|------|
+| 0   | 0    |
+| 1   | 1.5  |
+| 10  | 7.2  |
+| 16  | 10   |
+| 50  | 21.8 |
+
+#### `srmToEBC(srm): number`
+
+`EBC ≈ SRM × 1.97`.
+
+| SRM | EBC  |
+|-----|------|
+| 7.2 | 14.2 |
+| 10  | 19.7 |
+
+### Volume
+
+Thin numerics only — no vessel deadspace or 3-vessel pipeline. Shrinkage defaults to **4%**. Strike temperature is °F. Palmer: `strike_F = (0.2 / qt_per_lb) × (target_F − grain_F) + target_F`.
+
+| Call | Result |
+|------|--------|
+| `boilOffGal(1.25, 1)` | 1.25 |
+| `applyShrinkage(5)` | 4.8 |
+| `undoShrinkage(5)` | 5.208 |
+| `grainAbsorptionGal(12, 0.12)` | 1.44 |
+| `strikeTemperatureF(152, 70, 1.25)` | 165.1 |
 
 ## Development
 
