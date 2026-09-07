@@ -6,3 +6,4 @@ export * from './fg';
 export * from './ibu';
 export * from './color';
 export * from './volume';
+export * from './water';
