@@ -1,6 +1,6 @@
 {
   "name": "@jbaran/zymurgy",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "main": "./lib/index.js",
   "description": "A collection of utilities for estimating beer and wine fermentation",
   "scripts": {
@@ -21,7 +21,9 @@
     "abv",
     "brix",
     "plato",
-    "hydrometer"
+    "hydrometer",
+    "water",
+    "mash-ph"
   ],
   "repository": {
     "type": "git",

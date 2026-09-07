@@ -30,6 +30,11 @@ const {
   moreySRM,
   maltColorUnits,
   strikeTemperatureF,
+  residualAlkalinity,
+  saltIonDelta,
+  lacticAlkalinityDrop,
+  troesterMashPH,
+  blendWater,
 } = require('@jbaran/zymurgy');
 
 brixToSG(10);                      // 1.04
@@ -46,9 +51,14 @@ predictedFG(1.050, 80);            // 1.01
 tinsethIBU([{ massG: 30, alphaAcidPercent: 6, timeMin: 60, use: 'boil', form: 'whole' }], 1.040, 20); // 22.7
 moreySRM(maltColorUnits(10, 8, 5)); // 10
 strikeTemperatureF(152, 70, 1.25); // 165.1
+residualAlkalinity({ca: 50, mg: 10, na: 0, cl: 0, so4: 0, alkalinity: 50}); // 34.3
+saltIonDelta('gypsum', 1, 1).ca;   // 61.5  (CaSO4·2H2O, 1 g per gal)
+lacticAlkalinityDrop(1, 1, 88);    // 155.6 ppm as CaCO3
+troesterMashPH(0, 2);              // 5.57  (RA 0, 2 SRM, 4 L/kg)
+blendWater({ca: 100, mg: 20, na: 40, cl: 60, so4: 80, alkalinity: 120}, 0.5).ca; // 50
 ```
 
-These are brewing estimates, not lab-grade measurements. Specific gravity is rounded to 3 decimal places, Brix and Plato to 1, gravity points to the nearest integer, ABV / attenuation / IBU / SRM / EBC to 1 decimal, volumes to 3, and strike temperature to 1. Related conversions are not always exact inverses.
+These are brewing estimates, not lab-grade measurements. Specific gravity is rounded to 3 decimal places, Brix and Plato to 1, gravity points to the nearest integer, ABV / attenuation / IBU / SRM / EBC to 1 decimal, volumes to 3, strike temperature to 1, ion / RA / lactic alkalinity-drop ppm to 1, and mash pH to 2. Related conversions are not always exact inverses.
 
 ## API
 
@@ -237,6 +247,58 @@ Thin numerics only — no vessel deadspace or 3-vessel pipeline. Shrinkage defau
 | `undoShrinkage(5)` | 5.208 |
 | `grainAbsorptionGal(12, 0.12)` | 1.44 |
 | `strikeTemperatureF(152, 70, 1.25)` | 165.1 |
+
+### Water
+
+Kolbach residual alkalinity, Troester/Braukaiser mash pH (RA + grain acidity from color — **not** deLange), salt ion yields, lactic acidification, and RO/diluent blend. Ions are Ca, Mg, Na, Cl, SO₄, alkalinity as CaCO₃ (ppm).
+
+Salt hydrates are explicit in the API. **Calcium chloride is `CaCl₂·2H₂O`** (anhydrous is not assumed). Yields are **ppm Δ per gram per US gallon** (Ken Schwartz / Palmer). `saltIonDeltaPerGramPerLiter` is the SI helper. Lactic **strength % is always an argument** (default **88**). Phosphoric, NaCl, pickling lime, and deLange are out of v1.
+
+Chalk (`CaCO₃`) Δions are the stoichiometric table values (dissolve-with-CO₂ / mash-acid path), not the half-alkalinity spreadsheet hack.
+
+#### `residualAlkalinity(ions): number`
+
+`RA = alkalinity − (Ca/3.5 + Mg/7)` (ppm as CaCO₃). Ca and Mg are ion ppm.
+
+| Ca | Mg | Alk | RA   |
+|----|----|-----|------|
+| 0  | 0  | 0   | 0    |
+| 50 | 10 | 50  | 34.3 |
+| 100| 20 | 200 | 168.6|
+| 140| 10 | 20  | -21.4|
+
+#### `saltIonDelta(salt, grams, gallons): WaterIons`
+
+| Salt (1 g / 1 gal) | Formula | Δions |
+|--------------------|---------|-------|
+| `gypsum` | CaSO₄·2H₂O | Ca 61.5, SO₄ 147.4 |
+| `calciumChloride` | CaCl₂·2H₂O | Ca 72.0, Cl 127.4 |
+| `epsom` | MgSO₄·7H₂O | Mg 26.1, SO₄ 103.0 |
+| `bakingSoda` | NaHCO₃ | Na 72.3, alk 157.4 |
+| `chalk` | CaCO₃ | Ca 105.8, alk 264.2 |
+
+#### `lacticAlkalinityDrop(ml, gallons, strengthPercent?): number`
+
+| Call | Result |
+|------|--------|
+| `lacticAlkalinityDrop(1, 1, 88)` | 155.6 |
+| `lacticAlkalinityDrop(2, 5, 88)` | 62.2 |
+| `lacticAlkalinityDrop(1, 1, 44)` | 77.8 |
+
+Related: `applyLactic`, `lacticAlkalinityDropSI`.
+
+#### `troesterMashPH(raPpm, colorSRM, thicknessLPerKg?, roastedFraction?): number`
+
+DI mash pH `5.6` plus Braukaiser color shift `−(SRM × (0.21·(1−roast) + 0.06·roast)) / 12`, then RA × `spH` where `spH = 0.013·R + 0.013`. Default thickness **4 L/kg**. `roastedFraction` `0` = all crystal/non-roast.
+
+| Call | Result |
+|------|--------|
+| `troesterMashPH(0, 2)` | 5.57 |
+| `troesterMashPH(0, 10)` | 5.43 |
+| `estimatedMashPH({ca: 50, mg: 10, na: 0, cl: 0, so4: 0, alkalinity: 50}, 2)` | 5.61 |
+| `troesterMashPH(178, 2)` | 5.80 |
+
+Related: `estimatedMashPH(ions, colorSRM, …)`, `blendWater(source, fractionTowardDiluent, diluent?)` (omitted diluent = RO/DI zeros).
 
 ## Development
 

@@ -1,0 +1,45 @@
+export type WaterIons = {
+    ca: number;
+    mg: number;
+    na: number;
+    cl: number;
+    so4: number;
+    alkalinity: number;
+};
+export type WaterSalt = 'bakingSoda' | 'gypsum' | 'calciumChloride' | 'epsom' | 'chalk';
+export declare const RO_WATER: WaterIons;
+export declare const LITERS_PER_US_GAL = 3.785411784;
+export declare const WATER_SALT_FORMULA: {
+    readonly bakingSoda: "NaHCO3";
+    readonly gypsum: "CaSO4·2H2O";
+    readonly calciumChloride: "CaCl2·2H2O";
+    readonly epsom: "MgSO4·7H2O";
+    readonly chalk: "CaCO3";
+};
+export declare const SALT_PPM_PER_G_PER_GAL: Record<WaterSalt, WaterIons>;
+export declare const DEFAULT_LACTIC_STRENGTH_PERCENT = 88;
+export declare const LACTIC_ACID_DENSITY_G_PER_ML = 1.206;
+export declare const LACTIC_ACID_MW = 90.08;
+export declare const MEQ_TO_PPM_CACO3 = 50;
+export declare const TROESTER_DI_MASH_PH = 5.6;
+export declare const DEFAULT_MASH_THICKNESS_L_PER_KG = 4;
+export declare const TROESTER_COLOR_PLATO_REF = 12;
+export declare const TROESTER_NON_ROAST_COLOR_COEFF = 0.21;
+export declare const TROESTER_ROAST_COLOR_COEFF = 0.06;
+export type WaterSaltAddition = {
+    salt: WaterSalt;
+    grams: number;
+};
+export declare function residualAlkalinity(ions: WaterIons): number;
+export declare function saltIonDelta(salt: WaterSalt, grams: number, gallons: number): WaterIons;
+export declare function saltIonDeltaPerGramPerLiter(salt: WaterSalt): WaterIons;
+export declare function addIons(base: WaterIons, delta: WaterIons): WaterIons;
+export declare function applySalts(base: WaterIons, additions: readonly WaterSaltAddition[], gallons: number): WaterIons;
+export declare function blendWater(source: WaterIons, fractionTowardDiluent: number, diluent?: WaterIons): WaterIons;
+export declare function lacticAlkalinityDrop(ml: number, gallons: number, strengthPercent?: number): number;
+export declare function lacticAlkalinityDropSI(ml: number, liters: number, strengthPercent?: number): number;
+export declare function applyLactic(ions: WaterIons, ml: number, gallons: number, strengthPercent?: number): WaterIons;
+export declare function troesterRaPhSlope(thicknessLPerKg: number): number;
+export declare function troesterColorPhShift(colorSRM: number, roastedFraction?: number): number;
+export declare function troesterMashPH(raPpm: number, colorSRM: number, thicknessLPerKg?: number, roastedFraction?: number): number;
+export declare function estimatedMashPH(ions: WaterIons, colorSRM: number, thicknessLPerKg?: number, roastedFraction?: number): number;

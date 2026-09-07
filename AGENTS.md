@@ -5,7 +5,8 @@
 ## Layout
 
 - Edit `src/` only. `src/index.ts` is the public entry and re-exports modules.
-- `lib/` is compiled CommonJS + `.d.ts` output (`package.json` `"main"` is `./lib/index.js`). It is committed; do not hand-edit it.
+- `lib/` is compiled CommonJS + `.d.ts` output (`package.json` `"main"` is `./lib/index.js`). It is tracked and **must be committed after `tsc`**. Do not hand-edit it.
+- This repo has **no husky/hooks**. After `src/` changes, run `npm run build` and commit the updated `lib/` alongside the source. A `src/` change without matching `lib/` is a failed cut.
 - Colocate tests next to the code they cover as `*.test.ts`. Tests are excluded from `tsc`.
 
 ## Commands
@@ -42,6 +43,7 @@ Current public API:
 - `hopFormFactor(form)` / `whirlpoolTempFactor(tempF)` / `tinsethUtilization(preBoilSG, timeMin)` / `tinsethIBU(hops, preBoilSG, volumeL, hopUtilizationFactor?)`
 - `maltColorUnits(colorLovibond, amountLb, batchGal)` / `moreySRM(mcu)` / `srmToEBC(srm)`
 - `boilOffGal(rateGalPerHour, hours)` / `applyShrinkage(hotVolume, shrinkageFrac?)` / `undoShrinkage(coldVolume, shrinkageFrac?)` / `grainAbsorptionGal(grainLb, absorptionGalPerLb)` / `strikeTemperatureF(targetF, grainF, ratioQtPerLb)`
+- `residualAlkalinity(ions)` / `saltIonDelta(salt, grams, gallons)` / `lacticAlkalinityDrop(ml, gallons, strengthPercent?)` / `troesterMashPH(raPpm, colorSRM, thicknessLPerKg?, roastedFraction?)` / `blendWater(source, fractionTowardDiluent, diluent?)`
 
 Related conversions are not exact inverses at every tested point (e.g. `sgToBrix(1.179)` is `40.1`, not `40`; `sgToPlato(1.048)` is `11.9`). Do not “fix” that unless asked; update tests if you intentionally change rounding or the formula.
 

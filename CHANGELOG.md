@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.4.0
+
+- Water chemistry helpers: ions, salt → Δions, lactic acidification, Kolbach RA, Troester/Braukaiser mash pH, dilution/blend
+- Salt hydrates are explicit (`NaHCO₃`, `CaSO₄·2H₂O`, **`CaCl₂·2H₂O` default**, `MgSO₄·7H₂O`, `CaCO₃`). Anhydrous CaCl₂ is not assumed
+- Lactic is required; strength % is always an API argument (default **88**). Phosphoric is parked
+- Ion yields are **ppm Δ per gram per US gallon** (Ken Schwartz / Palmer table). SI per-g-per-L helpers are included
+- Mash pH v1 is Troester/Braukaiser (RA + grain acidity from color). Not deLange charge-balance
+
+Locked defaults:
+
+1. **Kolbach RA** (ppm as CaCO₃) = `alkalinity − (Ca/3.5 + Mg/7)`. Ca and Mg are ion ppm.
+2. **Troester mash pH** uses DI mash pH `5.6` plus the Braukaiser color shift and `spH = 0.013·R + 0.013` (default thickness **4 L/kg**). Color roasted fraction `0` = all crystal/non-roast.
+3. **Calcium chloride = dihydrate**. **Lactic strength is an argument** (default 88%).
+
+Parked: NaCl, pickling lime, phosphoric, deLange, anhydrous CaCl₂ as default.
+
 ## 1.3.0
 
 - Predicted OG (points / PPG method), including `% extract → PPG` via sucrose ~46
