@@ -313,7 +313,7 @@ npm run build   # tsc → lib/
 
 Publish from GitHub Actions only (npm Trusted Publishing via OIDC — no local `npm publish`, no `NPM_TOKEN`). Bump and land the version on `main` first.
 
-Then **Actions → CI → Run workflow** on `main`. The `test` job runs first; `publish` runs only on that manual dispatch after `test` is green.
+Then **Actions → CI → Run workflow** on `main`. The `test` job runs first; `publish` runs only on that manual dispatch after `test` is green. The `publish` job uses the `npm` GitHub Environment.
 
 ## License
 
