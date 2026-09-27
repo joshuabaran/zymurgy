@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.6.0
+
+- Yeast starter module (`starter.ts`): `targetCells` / `pitchRateFor`, `liquidYeastViability`, `dmeForGravity` / `starterGravity`, `starterGrowthPerGram` / `starterGrowth`
+- Constants: `PITCH_RATE`, `DME_PPG`, `STARTER_GROWTH_B_PER_G`, `STARTER_STIR_PLATE_FLAT_BELOW_B_PER_G`, `STARTER_MAX_INOCULATION_B_PER_G`, and viability defaults. Objects are frozen
+
+Locked defaults:
+
+1. **Units**: cells in billions, volumes in liters, pitch rates in million cells / mL / °P. Presets: ale 0.75, high-gravity ale 1.0, lager 1.5, high-gravity lager 2.0.
+2. **Viability**: linear from the manufacture date, 97 % start and −0.7 % per day, clamped to `[0, start]`. Start and rate are arguments.
+3. **DME = 44 PPG**, and DME grams count as grams of extract. `starterGravity` goes through `predictedOG` (100 % efficient addition).
+4. **Growth = Troester/Braukaiser**, per gram of extract, keyed on the inoculation rate. Stir plate: 1.4 below 1.4 B/g, `2.33 − 0.67 × rate` up to 3.5 (clamped at 0), none above 3.5. Shaken 0.62 and still 0.4, both none above 3.5. ±15 % estimates.
+
+Parked: step starters, White/Mr Malty growth, dry yeast and slurry cell densities.
+
 ## 1.5.0
 
 - **Fix `residualAlkalinity`**: it applied Kolbach's hardness-as-CaCO₃ divisors (`Ca/3.5 + Mg/7`) to ion ppm, understating the Ca/Mg effect by ~2.5×. It now uses Palmer's ion-ppm form `alkalinity − (Ca/1.4 + Mg/1.7)`. RA is lower (often much lower) for any water with Ca or Mg, and `estimatedMashPH` drops with it. Example: Ca 50, Mg 10, alk 50 was 34.3 and is now 8.4.

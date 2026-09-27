@@ -23,7 +23,7 @@ After changing `src/`, run tests. If the public API or emitted JS/types change, 
 - TypeScript, `strict: true`, target ES2016, CommonJS. CI runs on Node 26.
 - Named exports only. Keep functions pure and synchronous.
 - Match existing style in the file you edit (2-space indent). `src/*.ts` uses semicolons; tests generally omit them and use single quotes.
-- Round conversion results with `Number(x.toFixed(n))`: specific gravity to 3 decimal places, Brix/Plato to 1, gravity points to 0, ABV and apparent attenuation to 1. Use `|| 0` where `sgToBrix` / `sgToPlato` do, so tiny negative residuals become `0`.
+- Round conversion results with `Number(x.toFixed(n))`: specific gravity to 3 decimal places, Brix/Plato to 1, gravity points to 0, ABV and apparent attenuation to 1, yeast cells (B) / DME grams / viability % to 1, inoculation and pitch rates to 2. Round once at the end of a calculation, not per step. Use `|| 0` where `sgToBrix` / `sgToPlato` do, so tiny negative residuals become `0`.
 - Do not add a bundler, linter, formatter, or runtime dependency unless the task requires it.
 
 ## Domain
@@ -46,7 +46,8 @@ Current public API:
 - `saltIonDelta(salt, grams, gallons)` / `saltIonDeltaPerGramPerLiter(salt)` / `addIons(base, delta)` / `applySalts(base, additions, gallons)` / `blendWater(source, fractionTowardDiluent, diluent?)`
 - `lacticAlkalinityDrop(ml, gallons, strengthPercent?)` / `lacticAlkalinityDropSI(ml, liters, strengthPercent?)` / `applyLactic(ions, ml, gallons, strengthPercent?)`
 - `troesterMashPH(raPpm, colorSRM, thicknessLPerKg?, roastedFraction?)` / `troesterRaPhSlope(thicknessLPerKg)` / `troesterColorPhShift(colorSRM, roastedFraction?)`
-- Constants: `SUCROSE_PPG`, `HOP_FORM_FACTOR`, `DEFAULT_SHRINKAGE_FRAC`, `RO_WATER`, `LITERS_PER_US_GAL`, `WATER_SALT_FORMULA`, `SALT_PPM_PER_G_PER_GAL`, lactic and Troester constants in `water.ts`. Exported objects are `Object.freeze`d; keep new ones frozen.
+- `targetCells(pitchRate, batchL, plato)` / `pitchRateFor(cellsB, batchL, plato)` / `liquidYeastViability(days, startPercent?, dropPercentPerDay?)` / `dmeForGravity(sg, liters, ppg?)` / `starterGravity(dmeGrams, liters, ppg?)` / `starterGrowthPerGram(inoculationBPerG, agitation)` / `starterGrowth(startCellsB, extractGrams, agitation)`
+- Constants: `PITCH_RATE`, `DME_PPG`, `STARTER_GROWTH_B_PER_G` and the other starter constants in `starter.ts`, `SUCROSE_PPG`, `HOP_FORM_FACTOR`, `DEFAULT_SHRINKAGE_FRAC`, `RO_WATER`, `LITERS_PER_US_GAL`, `WATER_SALT_FORMULA`, `SALT_PPM_PER_G_PER_GAL`, lactic and Troester constants in `water.ts`. Exported objects are `Object.freeze`d; keep new ones frozen.
 
 Residual alkalinity takes Ca and Mg as ion ppm, so it uses Palmer's `Ca/1.4 + Mg/1.7`, not Kolbach's hardness-as-CaCO₃ `/3.5` and `/7`.
 
