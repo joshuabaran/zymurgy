@@ -51,7 +51,7 @@ predictedFG(1.050, 80);            // 1.01
 tinsethIBU([{ massG: 30, alphaAcidPercent: 6, timeMin: 60, use: 'boil', form: 'whole' }], 1.040, 20); // 22.7
 moreySRM(maltColorUnits(10, 8, 5)); // 10
 strikeTemperatureF(152, 70, 1.25); // 165.1
-residualAlkalinity({ca: 50, mg: 10, na: 0, cl: 0, so4: 0, alkalinity: 50}); // 34.3
+residualAlkalinity({ca: 50, mg: 10, na: 0, cl: 0, so4: 0, alkalinity: 50}); // 8.4
 saltIonDelta('gypsum', 1, 1).ca;   // 61.5  (CaSO4·2H2O, 1 g per gal)
 lacticAlkalinityDrop(1, 1, 88);    // 155.6 ppm as CaCO3
 troesterMashPH(0, 2);              // 5.57  (RA 0, 2 SRM, 4 L/kg)
