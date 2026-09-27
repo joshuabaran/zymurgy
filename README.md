@@ -315,7 +315,7 @@ Plan a starter: how many cells a batch needs, how many a liquid yeast pack still
 
 #### `targetCells(pitchRate, batchL, plato)` / `pitchRateFor(cellsB, batchL, plato)`
 
-`cells = rate × mL × °P`. `PITCH_RATE` has the usual presets: `ale` 0.75, `highGravityAle` 1.0, `lager` 1.5, `highGravityLager` 2.0 (high gravity is above 1.060 / 15 °P). `pitchRateFor` is the inverse and returns `0` for no volume or extract.
+`cells (B) = rate × liters × °P` (the same as `rate × mL × °P / 1000`, since `rate × mL × °P` is millions of cells). `PITCH_RATE` has the usual presets: `ale` 0.75, `highGravityAle` 1.0, `lager` 1.5, `highGravityLager` 2.0 (high gravity is above 1.060 / 15 °P). `pitchRateFor` is the inverse and returns `0` when the volume or °P is exactly `0`.
 
 | Batch | °P | Rate | Cells |
 |-------|----|------|-------|
@@ -335,7 +335,7 @@ Linear decline from the manufacture date (~21 % per month), clamped to `[0, star
 
 #### `dmeForGravity(sg, liters, ppg = 44)` / `starterGravity(dmeGrams, liters, ppg = 44)`
 
-Light DME at **44 PPG**: about 100 g per liter for 1.037. `starterGravity` is `predictedOG` with the DME as a 100 %-efficient addition.
+Light DME at **44 PPG**: about 100 g per liter for 1.037. `dmeForGravity` returns `0` for a volume or PPG of exactly `0`. `starterGravity` is `predictedOG` with the DME as a 100 %-efficient addition.
 
 | Starter | SG    | DME     |
 |---------|-------|---------|
@@ -360,7 +360,9 @@ Kai Troester's (Braukaiser) model, in billions of cells grown per gram of extrac
 | 76 B (30 days) | 151.1 g (1.5 L) | shaken | 93.7 B | 169.7 B |
 | 400 B | 100 g | stir plate | 0 | 400 B |
 
-With no extract, nothing grows. Treat results as **±15 %** estimates. The model is stated for stir plates and may overestimate for starters above about 5 L.
+`totalB` is always `startCellsB + grownB` (both rounded to tenths). With `0` g of extract, nothing grows. Treat results as **±15 %** estimates. The model is stated for stir plates and may overestimate for starters above about 5 L.
+
+Like the rest of the library, only exactly-zero volumes and extract get a sentinel (`0`, `1`, or the starting cells). Negative inputs run through the formulas unchanged.
 
 ## Development
 

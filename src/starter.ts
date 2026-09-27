@@ -55,17 +55,17 @@ export type StarterGrowth = {
   totalB: number;
 };
 
-// Cells needed = rate (M/mL/°P) × mL × °P. Returned in billions.
+// Cells needed, in billions: rate (M/mL/°P) × liters × °P. (rate × mL × °P is millions; the 1000s cancel.)
 export function targetCells(pitchRate: number, batchL: number, plato: number): number {
-  return Number(((pitchRate * batchL * 1000 * plato) / 1000).toFixed(1));
+  return Number((pitchRate * batchL * plato).toFixed(1));
 }
 
 // The pitch rate (M/mL/°P) a cell count gives. Returns 0 when the batch has no volume or extract.
 export function pitchRateFor(cellsB: number, batchL: number, plato: number): number {
-  if (batchL <= 0 || plato <= 0) {
+  if (batchL === 0 || plato === 0) {
     return 0;
   }
-  return Number(((cellsB * 1000) / (batchL * 1000 * plato)).toFixed(2));
+  return Number((cellsB / (batchL * plato)).toFixed(2));
 }
 
 export function liquidYeastViability(
@@ -77,9 +77,9 @@ export function liquidYeastViability(
   return Number(Math.min(startPercent, Math.max(0, viability)).toFixed(1));
 }
 
-// Grams of DME for a starter of `liters` at `sg`. Returns 0 for no volume.
+// Grams of DME for a starter of `liters` at `sg`. Returns 0 for no volume or a 0 PPG.
 export function dmeForGravity(sg: number, liters: number, ppg: number = DME_PPG): number {
-  if (liters <= 0 || ppg <= 0) {
+  if (liters === 0 || ppg === 0) {
     return 0;
   }
   const gallons = liters / LITERS_PER_US_GAL;
@@ -107,16 +107,22 @@ export function starterGrowthPerGram(inoculationBPerG: number, agitation: Starte
   return Number(rawGrowthPerGram(inoculationBPerG, agitation).toFixed(3));
 }
 
-// Cells after a starter. With no extract there is no growth.
+// Rounds to tenths. The 1e-8 nudge (as in troesterMashPH) keeps binary halfway values like 79.05 from
+// rounding down, so grownB and totalB round the same way.
+function roundTenths(value: number): number {
+  return Number((Math.round(value * 10 + 1e-8) / 10).toFixed(1));
+}
+
+// Cells after a starter. totalB is startCellsB + grownB, rounded to tenths. With no extract there is no growth.
 export function starterGrowth(startCellsB: number, extractGrams: number, agitation: StarterAgitation): StarterGrowth {
-  if (extractGrams <= 0) {
-    return { inoculationRate: 0, grownB: 0, totalB: Number(startCellsB.toFixed(1)) };
+  if (extractGrams === 0) {
+    return { inoculationRate: 0, grownB: 0, totalB: roundTenths(startCellsB) };
   }
   const inoculationRate = startCellsB / extractGrams;
-  const grown = rawGrowthPerGram(inoculationRate, agitation) * extractGrams;
+  const grownB = roundTenths(rawGrowthPerGram(inoculationRate, agitation) * extractGrams);
   return {
     inoculationRate: Number(inoculationRate.toFixed(2)),
-    grownB: Number(grown.toFixed(1)),
-    totalB: Number((startCellsB + grown).toFixed(1)),
+    grownB,
+    totalB: roundTenths(startCellsB + grownB),
   };
 }

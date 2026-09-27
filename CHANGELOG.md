@@ -12,6 +12,8 @@ Locked defaults:
 3. **DME = 44 PPG**, and DME grams count as grams of extract. `starterGravity` goes through `predictedOG` (100 % efficient addition).
 4. **Growth = Troester/Braukaiser**, per gram of extract, keyed on the inoculation rate. Stir plate: 1.4 below 1.4 B/g, `2.33 − 0.67 × rate` up to 3.5 (clamped at 0), none above 3.5. Shaken 0.62 and still 0.4, both none above 3.5. ±15 % estimates.
 
+5. **Rounding**: `starterGrowth` rounds `grownB` to tenths (with the `1e-8` halfway nudge `troesterMashPH` uses), then `totalB = start + grownB`, so the two always agree. Only exactly-zero volume / °P / extract get a sentinel; negatives run through the formulas like the other modules.
+
 Parked: step starters, White/Mr Malty growth, dry yeast and slurry cell densities.
 
 ## 1.5.0

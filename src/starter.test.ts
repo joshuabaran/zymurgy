@@ -50,6 +50,10 @@ describe('pitchRateFor', () => {
     expect(pitchRateFor(100, 0, plato)).toBe(0)
     expect(pitchRateFor(100, batchL, 0)).toBe(0)
   })
+  test('lets negative inputs run through the formula, like the other modules', () => {
+    expect(targetCells(0.75, -5, 12.4)).toBe(-46.5)
+    expect(pitchRateFor(-46.5, -5, 12.4)).toBe(0.75)
+  })
 })
 
 describe('liquidYeastViability', () => {
@@ -148,6 +152,21 @@ describe('starterGrowth', () => {
   })
   test('too many cells for the extract grow nothing', () => {
     expect(starterGrowth(400, 100, 'stirPlate')).toEqual({ inoculationRate: 4, grownB: 0, totalB: 400 })
+  })
+  test('rounds a halfway growth the same way in grownB and totalB', () => {
+    // 0.62 × 127.5 = 79.05, and (2.33 − 0.67 × 60/35) × 35 = 41.35: halfway values in binary
+    expect(starterGrowth(50, 127.5, 'shaken')).toEqual({ inoculationRate: 0.39, grownB: 79.1, totalB: 129.1 })
+    expect(starterGrowth(60, 35, 'stirPlate')).toEqual({ inoculationRate: 1.71, grownB: 41.4, totalB: 101.4 })
+  })
+  test('totalB is always start + grownB for single-decimal starts', () => {
+    for (const start of [12.3, 50, 76, 97, 110.5, 200]) {
+      for (const grams of [35, 100.8, 127.5, 151.1, 201.5]) {
+        for (const agitation of ['stirPlate', 'shaken', 'none'] as const) {
+          const { grownB, totalB } = starterGrowth(start, grams, agitation)
+          expect(totalB).toBe(Number((start + grownB).toFixed(1)))
+        }
+      }
+    }
   })
   test('no extract means no growth', () => {
     expect(starterGrowth(97, 0, 'stirPlate')).toEqual({ inoculationRate: 0, grownB: 0, totalB: 97 })
