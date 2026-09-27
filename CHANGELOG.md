@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.5.0
+
+- **Fix `residualAlkalinity`**: it applied Kolbach's hardness-as-CaCO₃ divisors (`Ca/3.5 + Mg/7`) to ion ppm, understating the Ca/Mg effect by ~2.5×. It now uses Palmer's ion-ppm form `alkalinity − (Ca/1.4 + Mg/1.7)`. RA is lower (often much lower) for any water with Ca or Mg, and `estimatedMashPH` drops with it. Example: Ca 50, Mg 10, alk 50 was 34.3 and is now 8.4.
+- `applySalts` and `applyLactic` round once at the end instead of after each step
+- Exported constants (`RO_WATER`, `SALT_PPM_PER_G_PER_GAL`, `WATER_SALT_FORMULA`, `HOP_FORM_FACTOR`) are frozen and typed read-only
+- `tsconfig.tsbuildinfo` is no longer shipped in the npm tarball
+- CI runs on Node 26 with `actions/checkout@v7` and `actions/setup-node@v7`. The publish job no longer restores the npm cache
+- `jest` and `@jest/globals` are explicit devDependencies
+- Source comments cite primary formula sources
+
 ## 1.4.0
 
 - Water chemistry helpers: ions, salt → Δions, lactic acidification, Kolbach RA, Troester/Braukaiser mash pH, dilution/blend
@@ -10,7 +20,7 @@
 
 Locked defaults:
 
-1. **Kolbach RA** (ppm as CaCO₃) = `alkalinity − (Ca/3.5 + Mg/7)`. Ca and Mg are ion ppm.
+1. **Kolbach RA** (ppm as CaCO₃) = `alkalinity − (Ca/3.5 + Mg/7)`. Ca and Mg are ion ppm. *(Incorrect for ion ppm; fixed in 1.5.0.)*
 2. **Troester mash pH** uses DI mash pH `5.6` plus the Braukaiser color shift and `spH = 0.013·R + 0.013` (default thickness **4 L/kg**). Color roasted fraction `0` = all crystal/non-roast.
 3. **Calcium chloride = dihydrate**. **Lactic strength is an argument** (default 88%).
 
@@ -40,4 +50,4 @@ Locked defaults (also documented on the IBU module):
 
 ## 1.2.0
 
-- Current npm release (published while the package was private)
+- Published while the package was private

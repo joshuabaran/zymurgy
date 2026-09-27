@@ -1,5 +1,4 @@
 // Tinseth utilization (Glenn Tinseth, 1997) plus a simplified whirlpool/hopstand scale.
-// brewledger docs/02-calculations.md section 5.
 //
 // Locked defaults (also CHANGELOG / PR):
 // 1. Gravity input is pre-boil SG (Brewfather-like). Parameter is named preBoilSG; callers pass that SG.
@@ -12,12 +11,12 @@
 export type HopForm = 'pellet' | 'whole' | 'plug' | 'cryo';
 export type HopUse = 'boil' | 'whirlpool' | 'dryHop';
 
-export const HOP_FORM_FACTOR = {
+export const HOP_FORM_FACTOR = Object.freeze({
   pellet: 1.1,
   whole: 1,
   plug: 1.02,
   cryo: 1.1,
-} as const;
+} as const);
 
 export type TinsethHopAddition = {
   massG: number;
@@ -63,7 +62,7 @@ export function tinsethIBU(
     const form = hopFormFactor(hop.form ?? 'pellet');
     let utilization = tinsethBigness(preBoilSG) * tinsethTimeFactor(hop.timeMin);
     if (hop.use === 'whirlpool') {
-      const tempF = hop.whirlpoolTempF === undefined ? 212 : hop.whirlpoolTempF;
+      const tempF = hop.whirlpoolTempF ?? 212;
       utilization *= whirlpoolTempFactor(tempF);
     }
 

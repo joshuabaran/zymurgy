@@ -1,5 +1,5 @@
-// Thin volume / mash numerics only (brewledger docs/02-calculations.md section 7).
-// Vessel wiring (deadspace, 3-vessel order, sparge algebra) stays in the app.
+// Thin volume / mash numerics only. Vessel wiring (deadspace, 3-vessel order,
+// sparge algebra) is left to the caller.
 
 export const DEFAULT_SHRINKAGE_FRAC = 0.04;
 

@@ -51,7 +51,7 @@ predictedFG(1.050, 80);            // 1.01
 tinsethIBU([{ massG: 30, alphaAcidPercent: 6, timeMin: 60, use: 'boil', form: 'whole' }], 1.040, 20); // 22.7
 moreySRM(maltColorUnits(10, 8, 5)); // 10
 strikeTemperatureF(152, 70, 1.25); // 165.1
-residualAlkalinity({ca: 50, mg: 10, na: 0, cl: 0, so4: 0, alkalinity: 50}); // 34.3
+residualAlkalinity({ca: 50, mg: 10, na: 0, cl: 0, so4: 0, alkalinity: 50}); // 8.4
 saltIonDelta('gypsum', 1, 1).ca;   // 61.5  (CaSO4·2H2O, 1 g per gal)
 lacticAlkalinityDrop(1, 1, 88);    // 155.6 ppm as CaCO3
 troesterMashPH(0, 2);              // 5.57  (RA 0, 2 SRM, 4 L/kg)
@@ -258,14 +258,14 @@ Chalk (`CaCO₃`) Δions are the stoichiometric table values (dissolve-with-CO�
 
 #### `residualAlkalinity(ions): number`
 
-`RA = alkalinity − (Ca/3.5 + Mg/7)` (ppm as CaCO₃). Ca and Mg are ion ppm.
+`RA = alkalinity − (Ca/1.4 + Mg/1.7)` (ppm as CaCO₃). Ca and Mg are ion ppm. This is Palmer's ion-ppm form of Kolbach; the familiar `/3.5` and `/7` divisors apply only when Ca and Mg are given as hardness as CaCO₃.
 
 | Ca | Mg | Alk | RA   |
 |----|----|-----|------|
 | 0  | 0  | 0   | 0    |
-| 50 | 10 | 50  | 34.3 |
-| 100| 20 | 200 | 168.6|
-| 140| 10 | 20  | -21.4|
+| 50 | 10 | 50  | 8.4  |
+| 100| 20 | 200 | 116.8|
+| 140| 10 | 20  | -85.9|
 
 #### `saltIonDelta(salt, grams, gallons): WaterIons`
 
@@ -295,7 +295,7 @@ DI mash pH `5.6` plus Braukaiser color shift `−(SRM × (0.21·(1−roast) + 0.
 |------|--------|
 | `troesterMashPH(0, 2)` | 5.57 |
 | `troesterMashPH(0, 10)` | 5.43 |
-| `estimatedMashPH({ca: 50, mg: 10, na: 0, cl: 0, so4: 0, alkalinity: 50}, 2)` | 5.61 |
+| `estimatedMashPH({ca: 50, mg: 10, na: 0, cl: 0, so4: 0, alkalinity: 50}, 2)` | 5.58 |
 | `troesterMashPH(178, 2)` | 5.80 |
 
 Related: `estimatedMashPH(ions, colorSRM, …)`, `blendWater(source, fractionTowardDiluent, diluent?)` (omitted diluent = RO/DI zeros).

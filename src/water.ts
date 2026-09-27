@@ -1,9 +1,10 @@
 // Water chemistry v1 — Dirt Wolf FINAL / Braukaiser = Kai Troester.
-// brewledger water-profiles stays out of this cut. Phosphoric, NaCl, pickling lime,
+// Named water profiles are out of scope. Phosphoric, NaCl, pickling lime,
 // deLange charge-balance, and anhydrous CaCl2-as-default are parked.
 //
 // Locked defaults:
-// 1. Kolbach RA (ppm as CaCO3) = alkalinity − (Ca/3.5 + Mg/7). Ca and Mg are ion ppm.
+// 1. Kolbach RA (ppm as CaCO3) = alkalinity − (Ca/1.4 + Mg/1.7), Palmer's ion-ppm form.
+//    Kolbach's /3.5 and /7 apply to hardness as CaCO3; Ca and Mg here are ion ppm.
 // 2. Mash pH v1 is Troester/Braukaiser: DI mash pH from beer color + RA × spH.
 //    Not deLange charge-balance. Color term uses roastedFraction of the specialty/color
 //    split (0 = all crystal/non-roast). Default mash thickness is Troester's 4 L/kg.
@@ -22,35 +23,35 @@ export type WaterIons = {
 
 export type WaterSalt = 'bakingSoda' | 'gypsum' | 'calciumChloride' | 'epsom' | 'chalk';
 
-export const RO_WATER: WaterIons = {
+export const RO_WATER: Readonly<WaterIons> = Object.freeze({
   ca: 0,
   mg: 0,
   na: 0,
   cl: 0,
   so4: 0,
   alkalinity: 0,
-};
+});
 
 export const LITERS_PER_US_GAL = 3.785411784;
 
-// Hydrate / formula is first-class so brewledger never guesses.
-export const WATER_SALT_FORMULA = {
+// Hydrate / formula is first-class so callers never have to guess.
+export const WATER_SALT_FORMULA = Object.freeze({
   bakingSoda: 'NaHCO3',
   gypsum: 'CaSO4·2H2O',
   calciumChloride: 'CaCl2·2H2O',
   epsom: 'MgSO4·7H2O',
   chalk: 'CaCO3',
-} as const;
+} as const);
 
 // Ken Schwartz "Quickie Water Chemistry Primer" / Palmer How to Brew (dihydrate CaCl2).
 // Hardness/alkalinity columns in that table are already "as CaCO3".
-export const SALT_PPM_PER_G_PER_GAL: Record<WaterSalt, WaterIons> = {
-  bakingSoda: {ca: 0, mg: 0, na: 72.3, cl: 0, so4: 0, alkalinity: 157.4},
-  gypsum: {ca: 61.5, mg: 0, na: 0, cl: 0, so4: 147.4, alkalinity: 0},
-  calciumChloride: {ca: 72, mg: 0, na: 0, cl: 127.4, so4: 0, alkalinity: 0},
-  epsom: {ca: 0, mg: 26.1, na: 0, cl: 0, so4: 103, alkalinity: 0},
-  chalk: {ca: 105.8, mg: 0, na: 0, cl: 0, so4: 0, alkalinity: 264.2},
-};
+export const SALT_PPM_PER_G_PER_GAL: Readonly<Record<WaterSalt, Readonly<WaterIons>>> = Object.freeze({
+  bakingSoda: Object.freeze({ca: 0, mg: 0, na: 72.3, cl: 0, so4: 0, alkalinity: 157.4}),
+  gypsum: Object.freeze({ca: 61.5, mg: 0, na: 0, cl: 0, so4: 147.4, alkalinity: 0}),
+  calciumChloride: Object.freeze({ca: 72, mg: 0, na: 0, cl: 127.4, so4: 0, alkalinity: 0}),
+  epsom: Object.freeze({ca: 0, mg: 26.1, na: 0, cl: 0, so4: 103, alkalinity: 0}),
+  chalk: Object.freeze({ca: 105.8, mg: 0, na: 0, cl: 0, so4: 0, alkalinity: 264.2}),
+});
 
 export const DEFAULT_LACTIC_STRENGTH_PERCENT = 88;
 // Typical 20 °C density of 88% w/w food-grade lactic. Strength scales acid mass only.
@@ -71,24 +72,12 @@ export type WaterSaltAddition = {
 };
 
 export function residualAlkalinity(ions: WaterIons): number {
-  const ra = ions.alkalinity - (ions.ca / 3.5 + ions.mg / 7);
+  const ra = ions.alkalinity - (ions.ca / 1.4 + ions.mg / 1.7);
   return Number(ra.toFixed(1)) || 0;
 }
 
 export function saltIonDelta(salt: WaterSalt, grams: number, gallons: number): WaterIons {
-  if (gallons === 0) {
-    return {...RO_WATER};
-  }
-  const perGramPerGal = SALT_PPM_PER_G_PER_GAL[salt];
-  const scale = grams / gallons;
-  return roundIons({
-    ca: perGramPerGal.ca * scale,
-    mg: perGramPerGal.mg * scale,
-    na: perGramPerGal.na * scale,
-    cl: perGramPerGal.cl * scale,
-    so4: perGramPerGal.so4 * scale,
-    alkalinity: perGramPerGal.alkalinity * scale,
-  });
+  return roundIons(rawSaltIonDelta(salt, grams, gallons));
 }
 
 export function saltIonDeltaPerGramPerLiter(salt: WaterSalt): WaterIons {
@@ -96,26 +85,20 @@ export function saltIonDeltaPerGramPerLiter(salt: WaterSalt): WaterIons {
 }
 
 export function addIons(base: WaterIons, delta: WaterIons): WaterIons {
-  return roundIons({
-    ca: base.ca + delta.ca,
-    mg: base.mg + delta.mg,
-    na: base.na + delta.na,
-    cl: base.cl + delta.cl,
-    so4: base.so4 + delta.so4,
-    alkalinity: base.alkalinity + delta.alkalinity,
-  });
+  return roundIons(sumIons(base, delta));
 }
 
+// Sums unrounded deltas and rounds once, so rounding error does not build up per salt.
 export function applySalts(
   base: WaterIons,
   additions: readonly WaterSaltAddition[],
   gallons: number
 ): WaterIons {
-  let ions = {...base};
+  let ions: WaterIons = {...base};
   for (const addition of additions) {
-    ions = addIons(ions, saltIonDelta(addition.salt, addition.grams, gallons));
+    ions = sumIons(ions, rawSaltIonDelta(addition.salt, addition.grams, gallons));
   }
-  return ions;
+  return roundIons(ions);
 }
 
 export function blendWater(
@@ -139,10 +122,7 @@ export function lacticAlkalinityDrop(
   gallons: number,
   strengthPercent: number = DEFAULT_LACTIC_STRENGTH_PERCENT
 ): number {
-  if (gallons === 0) {
-    return 0;
-  }
-  return lacticAlkalinityDropSI(ml, gallons * LITERS_PER_US_GAL, strengthPercent);
+  return Number(rawLacticDropPpm(ml, gallons * LITERS_PER_US_GAL, strengthPercent).toFixed(1)) || 0;
 }
 
 export function lacticAlkalinityDropSI(
@@ -150,13 +130,7 @@ export function lacticAlkalinityDropSI(
   liters: number,
   strengthPercent: number = DEFAULT_LACTIC_STRENGTH_PERCENT
 ): number {
-  if (liters === 0) {
-    return 0;
-  }
-  const massG = ml * LACTIC_ACID_DENSITY_G_PER_ML * (strengthPercent / 100);
-  const meq = (massG / LACTIC_ACID_MW) * 1000;
-  const ppm = (meq * MEQ_TO_PPM_CACO3) / liters;
-  return Number(ppm.toFixed(1)) || 0;
+  return Number(rawLacticDropPpm(ml, liters, strengthPercent).toFixed(1)) || 0;
 }
 
 export function applyLactic(
@@ -167,7 +141,7 @@ export function applyLactic(
 ): WaterIons {
   return roundIons({
     ...ions,
-    alkalinity: ions.alkalinity - lacticAlkalinityDrop(ml, gallons, strengthPercent),
+    alkalinity: ions.alkalinity - rawLacticDropPpm(ml, gallons * LITERS_PER_US_GAL, strengthPercent),
   });
 }
 
@@ -212,4 +186,40 @@ function roundIons(ions: WaterIons): WaterIons {
     so4: Number(ions.so4.toFixed(1)) || 0,
     alkalinity: Number(ions.alkalinity.toFixed(1)) || 0,
   };
+}
+
+function rawSaltIonDelta(salt: WaterSalt, grams: number, gallons: number): WaterIons {
+  if (gallons === 0) {
+    return {...RO_WATER};
+  }
+  const perGramPerGal = SALT_PPM_PER_G_PER_GAL[salt];
+  const scale = grams / gallons;
+  return {
+    ca: perGramPerGal.ca * scale,
+    mg: perGramPerGal.mg * scale,
+    na: perGramPerGal.na * scale,
+    cl: perGramPerGal.cl * scale,
+    so4: perGramPerGal.so4 * scale,
+    alkalinity: perGramPerGal.alkalinity * scale,
+  };
+}
+
+function sumIons(base: WaterIons, delta: WaterIons): WaterIons {
+  return {
+    ca: base.ca + delta.ca,
+    mg: base.mg + delta.mg,
+    na: base.na + delta.na,
+    cl: base.cl + delta.cl,
+    so4: base.so4 + delta.so4,
+    alkalinity: base.alkalinity + delta.alkalinity,
+  };
+}
+
+function rawLacticDropPpm(ml: number, liters: number, strengthPercent: number): number {
+  if (liters === 0) {
+    return 0;
+  }
+  const massG = ml * LACTIC_ACID_DENSITY_G_PER_ML * (strengthPercent / 100);
+  const meq = (massG / LACTIC_ACID_MW) * 1000;
+  return (meq * MEQ_TO_PPM_CACO3) / liters;
 }

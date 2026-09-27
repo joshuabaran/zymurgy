@@ -1,11 +1,11 @@
 export type HopForm = 'pellet' | 'whole' | 'plug' | 'cryo';
 export type HopUse = 'boil' | 'whirlpool' | 'dryHop';
-export declare const HOP_FORM_FACTOR: {
+export declare const HOP_FORM_FACTOR: Readonly<{
     readonly pellet: 1.1;
     readonly whole: 1;
     readonly plug: 1.02;
     readonly cryo: 1.1;
-};
+}>;
 export type TinsethHopAddition = {
     massG: number;
     alphaAcidPercent: number;

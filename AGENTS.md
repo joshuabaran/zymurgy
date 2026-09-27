@@ -20,12 +20,11 @@ After changing `src/`, run tests. If the public API or emitted JS/types change, 
 
 ## Code conventions
 
-- TypeScript, `strict: true`, target ES2016, CommonJS.
+- TypeScript, `strict: true`, target ES2016, CommonJS. CI runs on Node 26.
 - Named exports only. Keep functions pure and synchronous.
 - Match existing style in the file you edit (2-space indent). `src/*.ts` uses semicolons; tests generally omit them and use single quotes.
 - Round conversion results with `Number(x.toFixed(n))`: specific gravity to 3 decimal places, Brix/Plato to 1, gravity points to 0, ABV and apparent attenuation to 1. Use `|| 0` where `sgToBrix` / `sgToPlato` do, so tiny negative residuals become `0`.
 - Do not add a bundler, linter, formatter, or runtime dependency unless the task requires it.
-- Leave the leftover `echo` script in `package.json` unless you are asked to clean scripts.
 
 ## Domain
 
@@ -43,7 +42,13 @@ Current public API:
 - `hopFormFactor(form)` / `whirlpoolTempFactor(tempF)` / `tinsethUtilization(preBoilSG, timeMin)` / `tinsethIBU(hops, preBoilSG, volumeL, hopUtilizationFactor?)`
 - `maltColorUnits(colorLovibond, amountLb, batchGal)` / `moreySRM(mcu)` / `srmToEBC(srm)`
 - `boilOffGal(rateGalPerHour, hours)` / `applyShrinkage(hotVolume, shrinkageFrac?)` / `undoShrinkage(coldVolume, shrinkageFrac?)` / `grainAbsorptionGal(grainLb, absorptionGalPerLb)` / `strikeTemperatureF(targetF, grainF, ratioQtPerLb)`
-- `residualAlkalinity(ions)` / `saltIonDelta(salt, grams, gallons)` / `lacticAlkalinityDrop(ml, gallons, strengthPercent?)` / `troesterMashPH(raPpm, colorSRM, thicknessLPerKg?, roastedFraction?)` / `blendWater(source, fractionTowardDiluent, diluent?)`
+- `residualAlkalinity(ions)` / `estimatedMashPH(ions, colorSRM, thicknessLPerKg?, roastedFraction?)`
+- `saltIonDelta(salt, grams, gallons)` / `saltIonDeltaPerGramPerLiter(salt)` / `addIons(base, delta)` / `applySalts(base, additions, gallons)` / `blendWater(source, fractionTowardDiluent, diluent?)`
+- `lacticAlkalinityDrop(ml, gallons, strengthPercent?)` / `lacticAlkalinityDropSI(ml, liters, strengthPercent?)` / `applyLactic(ions, ml, gallons, strengthPercent?)`
+- `troesterMashPH(raPpm, colorSRM, thicknessLPerKg?, roastedFraction?)` / `troesterRaPhSlope(thicknessLPerKg)` / `troesterColorPhShift(colorSRM, roastedFraction?)`
+- Constants: `SUCROSE_PPG`, `HOP_FORM_FACTOR`, `DEFAULT_SHRINKAGE_FRAC`, `RO_WATER`, `LITERS_PER_US_GAL`, `WATER_SALT_FORMULA`, `SALT_PPM_PER_G_PER_GAL`, lactic and Troester constants in `water.ts`. Exported objects are `Object.freeze`d; keep new ones frozen.
+
+Residual alkalinity takes Ca and Mg as ion ppm, so it uses Palmer's `Ca/1.4 + Mg/1.7`, not Kolbach's hardness-as-CaCO₃ `/3.5` and `/7`.
 
 Related conversions are not exact inverses at every tested point (e.g. `sgToBrix(1.179)` is `40.1`, not `40`; `sgToPlato(1.048)` is `11.9`). Do not “fix” that unless asked; update tests if you intentionally change rounding or the formula.
 

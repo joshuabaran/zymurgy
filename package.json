@@ -1,6 +1,6 @@
 {
   "name": "@jbaran/zymurgy",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "main": "./lib/index.js",
   "description": "A collection of utilities for estimating beer and wine fermentation",
   "scripts": {
@@ -36,6 +36,8 @@
   },
   "homepage": "https://github.com/joshuabaran/zymurgy#readme",
   "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "jest": "^29.7.0",
     "ts-jest": "^29.4.12",
     "typescript": "^6.0.3"
   }
