@@ -117,20 +117,20 @@ describe('residualAlkalinity', () => {
   test('is 0 when alkalinity is 0 and there is no Ca or Mg', () => {
     expect(residualAlkalinity({ca: 0, mg: 0, na: 10, cl: 10, so4: 10, alkalinity: 0})).toBe(0)
   })
-  test('Dirt Wolf Kolbach golden: Ca 50, Mg 10, alk 50 → 34.3', () => {
-    expect(residualAlkalinity({ca: 50, mg: 10, na: 0, cl: 0, so4: 0, alkalinity: 50})).toBe(34.3)
+  test('Ca 50, Mg 10, alk 50 → 8.4 (Palmer ion-ppm form)', () => {
+    expect(residualAlkalinity({ca: 50, mg: 10, na: 0, cl: 0, so4: 0, alkalinity: 50})).toBe(8.4)
   })
-  test('Dirt Wolf Kolbach golden: Ca 100, Mg 20, alk 200 → 168.6', () => {
-    expect(residualAlkalinity({ca: 100, mg: 20, na: 0, cl: 0, so4: 0, alkalinity: 200})).toBe(168.6)
+  test('Ca 100, Mg 20, alk 200 → 116.8', () => {
+    expect(residualAlkalinity({ca: 100, mg: 20, na: 0, cl: 0, so4: 0, alkalinity: 200})).toBe(116.8)
   })
   test('goes negative when Ca/Mg exceed alkalinity', () => {
-    expect(residualAlkalinity({ca: 140, mg: 10, na: 0, cl: 0, so4: 0, alkalinity: 20})).toBe(-21.4)
+    expect(residualAlkalinity({ca: 140, mg: 10, na: 0, cl: 0, so4: 0, alkalinity: 20})).toBe(-85.9)
   })
   test('is alkalinity when Ca and Mg are 0', () => {
     expect(residualAlkalinity({ca: 0, mg: 0, na: 0, cl: 0, so4: 0, alkalinity: 100})).toBe(100)
   })
-  test('is -20 when Ca is 70 and alkalinity is 0', () => {
-    expect(residualAlkalinity({ca: 70, mg: 0, na: 0, cl: 0, so4: 0, alkalinity: 0})).toBe(-20)
+  test('is -50 when Ca is 70 and alkalinity is 0', () => {
+    expect(residualAlkalinity({ca: 70, mg: 0, na: 0, cl: 0, so4: 0, alkalinity: 0})).toBe(-50)
   })
 })
 
@@ -149,10 +149,10 @@ describe('troesterMashPH', () => {
     expect(troesterMashPH(0, 20, 4, 1)).toBe(5.5)
     expect(troesterMashPH(0, 20, 4, 0)).toBe(5.25)
   })
-  test('Dirt Wolf ion/color golden: Ca 50, Mg 10, alk 50, 2 SRM, 4 L/kg → 5.61', () => {
+  test('ions → RA → mash pH: Ca 50, Mg 10, alk 50, 2 SRM, 4 L/kg → 5.58', () => {
     const ions = {ca: 50, mg: 10, na: 0, cl: 0, so4: 0, alkalinity: 50}
-    expect(residualAlkalinity(ions)).toBe(34.3)
-    expect(estimatedMashPH(ions, 2)).toBe(5.61)
+    expect(residualAlkalinity(ions)).toBe(8.4)
+    expect(estimatedMashPH(ions, 2)).toBe(5.58)
   })
   test('10 °dH RA (178 ppm) at 4 L/kg raises 2 SRM mash pH to 5.80', () => {
     expect(troesterRaPhSlope(4)).toBeCloseTo(0.065, 10)
@@ -229,7 +229,12 @@ describe('applyLactic / applySalts', () => {
     const treated = applySalts(RO_WATER, [{salt: 'gypsum', grams: 1}], 1)
     expect(treated.ca).toBe(61.5)
     expect(treated.so4).toBe(147.4)
-    expect(residualAlkalinity(treated)).toBe(-17.6)
+    expect(residualAlkalinity(treated)).toBe(-43.9)
+  })
+  test('applySalts rounds once, not per addition', () => {
+    const gypsum = {salt: 'gypsum' as const, grams: 0.3}
+    expect(saltIonDelta('gypsum', 0.3, 7).ca).toBe(2.6)
+    expect(applySalts(RO_WATER, [gypsum, gypsum], 7).ca).toBe(5.3)
   })
   test('addIons composes two deltas', () => {
     expect(addIons(saltIonDelta('gypsum', 1, 1), saltIonDelta('epsom', 1, 1))).toEqual({
@@ -240,5 +245,14 @@ describe('applyLactic / applySalts', () => {
       so4: 250.4,
       alkalinity: 0,
     })
+  })
+})
+
+describe('exported constants', () => {
+  test('are frozen so callers cannot change library defaults', () => {
+    expect(Object.isFrozen(RO_WATER)).toBe(true)
+    expect(Object.isFrozen(SALT_PPM_PER_G_PER_GAL)).toBe(true)
+    expect(Object.isFrozen(SALT_PPM_PER_G_PER_GAL.gypsum)).toBe(true)
+    expect(Object.isFrozen(WATER_SALT_FORMULA)).toBe(true)
   })
 })

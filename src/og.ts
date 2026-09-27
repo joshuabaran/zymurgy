@@ -1,4 +1,4 @@
-// Points / PPG method (brewledger docs/02-calculations.md section 2).
+// Points / PPG method (Palmer, How to Brew, extract potential and brewhouse efficiency).
 // BeerJSON yield.fineGrind / potential: PPG ≈ yield% / 100 * 46 (sucrose).
 export const SUCROSE_PPG = 46;
 

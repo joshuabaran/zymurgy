@@ -1,5 +1,5 @@
 import {describe, expect, test} from '@jest/globals'
-import { hopFormFactor, tinsethIBU, tinsethUtilization, whirlpoolTempFactor } from './ibu'
+import { HOP_FORM_FACTOR, hopFormFactor, tinsethIBU, tinsethUtilization, whirlpoolTempFactor } from './ibu'
 
 describe('hopFormFactor', () => {
   test('uses 1.1 for pellet', () => {
@@ -128,5 +128,11 @@ describe('tinsethIBU', () => {
       { ...base, form: 'whole' },
       { ...base, use: 'dryHop', timeMin: 4320 },
     ], 1.040, 20)).toBe(22.7)
+  })
+})
+
+describe('HOP_FORM_FACTOR', () => {
+  test('is frozen so callers cannot change library defaults', () => {
+    expect(Object.isFrozen(HOP_FORM_FACTOR)).toBe(true)
   })
 })

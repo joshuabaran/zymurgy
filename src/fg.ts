@@ -1,4 +1,4 @@
-// Predicted FG from OG and yeast apparent attenuation (brewledger docs/02-calculations.md section 3).
+// Predicted FG from OG and yeast apparent attenuation: FG points = OG points × (1 − attenuation).
 export function predictedFG(og: number, attenuationPercent: number): number {
   const ogPoints = (og - 1) * 1000;
   const fgPoints = ogPoints * (1 - attenuationPercent / 100);
