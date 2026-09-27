@@ -1,0 +1,21 @@
+export type PitchRateStyle = 'ale' | 'highGravityAle' | 'lager' | 'highGravityLager';
+export declare const PITCH_RATE: Readonly<Record<PitchRateStyle, number>>;
+export declare const DEFAULT_YEAST_VIABILITY_START_PERCENT = 97;
+export declare const DEFAULT_YEAST_VIABILITY_DROP_PERCENT_PER_DAY = 0.7;
+export declare const DME_PPG = 44;
+export type StarterAgitation = 'stirPlate' | 'shaken' | 'none';
+export declare const STARTER_GROWTH_B_PER_G: Readonly<Record<StarterAgitation, number>>;
+export declare const STARTER_STIR_PLATE_FLAT_BELOW_B_PER_G = 1.4;
+export declare const STARTER_MAX_INOCULATION_B_PER_G = 3.5;
+export type StarterGrowth = {
+    inoculationRate: number;
+    grownB: number;
+    totalB: number;
+};
+export declare function targetCells(pitchRate: number, batchL: number, plato: number): number;
+export declare function pitchRateFor(cellsB: number, batchL: number, plato: number): number;
+export declare function liquidYeastViability(daysSinceManufacture: number, startPercent?: number, dropPercentPerDay?: number): number;
+export declare function dmeForGravity(sg: number, liters: number, ppg?: number): number;
+export declare function starterGravity(dmeGrams: number, liters: number, ppg?: number): number;
+export declare function starterGrowthPerGram(inoculationBPerG: number, agitation: StarterAgitation): number;
+export declare function starterGrowth(startCellsB: number, extractGrams: number, agitation: StarterAgitation): StarterGrowth;

@@ -35,6 +35,11 @@ const {
   lacticAlkalinityDrop,
   troesterMashPH,
   blendWater,
+  PITCH_RATE,
+  targetCells,
+  liquidYeastViability,
+  dmeForGravity,
+  starterGrowth,
 } = require('@jbaran/zymurgy');
 
 brixToSG(10);                      // 1.04
@@ -56,9 +61,13 @@ saltIonDelta('gypsum', 1, 1).ca;   // 61.5  (CaSO4·2H2O, 1 g per gal)
 lacticAlkalinityDrop(1, 1, 88);    // 155.6 ppm as CaCO3
 troesterMashPH(0, 2);              // 5.57  (RA 0, 2 SRM, 4 L/kg)
 blendWater({ca: 100, mg: 20, na: 40, cl: 60, so4: 80, alkalinity: 120}, 0.5).ca; // 50
+targetCells(PITCH_RATE.ale, 18.927, 12.4); // 176  (billion cells for 5 gal of 1.050 ale)
+liquidYeastViability(30);          // 76   (% viable, 30 days after manufacture)
+dmeForGravity(1.037, 1);           // 100.8 (g DME for a 1 L starter at 1.037)
+starterGrowth(97, 100.8, 'stirPlate').totalB; // 238.1
 ```
 
-These are brewing estimates, not lab-grade measurements. Specific gravity is rounded to 3 decimal places, Brix and Plato to 1, gravity points to the nearest integer, ABV / attenuation / IBU / SRM / EBC to 1 decimal, volumes to 3, strike temperature to 1, ion / RA / lactic alkalinity-drop ppm to 1, and mash pH to 2. Related conversions are not always exact inverses.
+These are brewing estimates, not lab-grade measurements. Specific gravity is rounded to 3 decimal places, Brix and Plato to 1, gravity points to the nearest integer, ABV / attenuation / IBU / SRM / EBC to 1 decimal, volumes to 3, strike temperature to 1, ion / RA / lactic alkalinity-drop ppm to 1, mash pH to 2, yeast cells (billions), DME grams, and viability % to 1, and inoculation and pitch rates to 2. Related conversions are not always exact inverses.
 
 ## API
 
@@ -299,6 +308,61 @@ DI mash pH `5.6` plus Braukaiser color shift `−(SRM × (0.21·(1−roast) + 0.
 | `troesterMashPH(178, 2)` | 5.80 |
 
 Related: `estimatedMashPH(ions, colorSRM, …)`, `blendWater(source, fractionTowardDiluent, diluent?)` (omitted diluent = RO/DI zeros).
+
+### Yeast starter
+
+Plan a starter: how many cells a batch needs, how many a liquid yeast pack still has, how much DME a starter takes, and how many cells it grows. Cells are in **billions (B)**, volumes in **liters**, and pitch rates in **million cells / mL / °P**.
+
+#### `targetCells(pitchRate, batchL, plato)` / `pitchRateFor(cellsB, batchL, plato)`
+
+`cells (B) = rate × liters × °P` (the same as `rate × mL × °P / 1000`, since `rate × mL × °P` is millions of cells). `PITCH_RATE` has the usual presets: `ale` 0.75, `highGravityAle` 1.0, `lager` 1.5, `highGravityLager` 2.0 (high gravity is above 1.060 / 15 °P). `pitchRateFor` is the inverse and returns `0` when the volume or °P is exactly `0`.
+
+| Batch | °P | Rate | Cells |
+|-------|----|------|-------|
+| 18.927 L (5 gal) | 12.4 (1.050) | 0.75 | 176 B |
+| 18.927 L (5 gal) | 12.4 (1.050) | 1.5  | 352 B |
+
+#### `liquidYeastViability(days, startPercent = 97, dropPercentPerDay = 0.7)`
+
+Linear decline from the manufacture date (~21 % per month), clamped to `[0, startPercent]`. Newer packs (e.g. PurePitch Next Gen) lose viability more slowly, so pass your own rate or use a known viability.
+
+| Days | Viability |
+|------|-----------|
+| 0    | 97 %      |
+| 30   | 76 %      |
+| 60   | 55 %      |
+| 200  | 0 %       |
+
+#### `dmeForGravity(sg, liters, ppg = 44)` / `starterGravity(dmeGrams, liters, ppg = 44)`
+
+Light DME at **44 PPG**: about 100 g per liter for 1.037. `dmeForGravity` returns `0` for a volume or PPG of exactly `0`. `starterGravity` is `predictedOG` with the DME as a 100 %-efficient addition.
+
+| Starter | SG    | DME     |
+|---------|-------|---------|
+| 1 L     | 1.037 | 100.8 g |
+| 1.5 L   | 1.037 | 151.1 g |
+| 2 L     | 1.037 | 201.5 g |
+
+#### `starterGrowth(startCellsB, extractGrams, agitation)` / `starterGrowthPerGram(inoculationBPerG, agitation)`
+
+Kai Troester's (Braukaiser) model, in billions of cells grown per gram of extract. It's keyed on the inoculation rate: starting cells ÷ grams of extract, where DME grams count as extract. `agitation` is `'stirPlate'`, `'shaken'`, or `'none'`.
+
+| Agitation | Below 1.4 B/g | 1.4–3.5 B/g | Above 3.5 B/g |
+|-----------|---------------|-------------|---------------|
+| `stirPlate` | 1.4 | `2.33 − 0.67 × rate` (clamped at 0; it reaches 0 at ~3.48) | 0 |
+| `shaken` | 0.62 | 0.62 | 0 |
+| `none` | 0.4 | 0.4 | 0 |
+
+| Starting cells | DME | Agitation | Grown | Total |
+|----------------|-----|-----------|-------|-------|
+| 97 B (fresh pack) | 100.8 g (1 L) | stir plate | 141.1 B | 238.1 B |
+| 76 B (30 days) | 151.1 g (1.5 L) | stir plate | 211.5 B | 287.5 B |
+| 76 B (30 days) | 151.1 g (1.5 L) | shaken | 93.7 B | 169.7 B |
+| 400 B | 100 g | stir plate | 0 | 400 B |
+
+`totalB` is always `startCellsB + grownB` (both rounded to tenths). With `0` g of extract, nothing grows. Treat results as **±15 %** estimates. The model is stated for stir plates and may overestimate for starters above about 5 L.
+
+Like the rest of the library, only exactly-zero volumes and extract get a sentinel (`0`, `1`, or the starting cells). Negative inputs run through the formulas unchanged.
 
 ## Development
 
