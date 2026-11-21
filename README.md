@@ -369,7 +369,7 @@ Like the rest of the library, only exactly-zero volumes and extract get a sentin
 Source lives in `src/`. Compiled CommonJS and type declarations are emitted to `lib/`.
 
 ```bash
-npm test        # Jest via ts-jest
+npm test        # tsc compiles tests, Jest runs them
 npm run build   # tsc → lib/
 ```
 

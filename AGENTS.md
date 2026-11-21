@@ -12,7 +12,7 @@
 ## Commands
 
 ```bash
-npm test          # jest via ts-jest (node)
+npm test          # tsc compiles tests, Jest runs them (node)
 npm run build     # tsc → lib/
 ```
 
@@ -57,7 +57,7 @@ Related conversions are not exact inverses at every tested point (e.g. `sgToBrix
 
 ## Tests
 
-- Jest + `ts-jest`, `@jest/globals` imports (`describe` / `test` / `expect`).
+- Tests are compiled with tsc and run by Jest. `@jest/globals` imports (`describe` / `test` / `expect`).
 - Assert the rounded public return values with `toBe`.
 - Cover the same style of representative points used today (0 / low / mid / high), plus any new edge the formula defines.
 

@@ -4,6 +4,7 @@
 dist
 tmp
 /out-tsc
+test-out
 
 # dependencies
 node_modules

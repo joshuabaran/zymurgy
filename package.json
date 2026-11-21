@@ -5,7 +5,7 @@
   "description": "A collection of utilities for estimating beer and wine fermentation",
   "scripts": {
     "build": "tsc",
-    "test": "jest"
+    "test": "tsc -p tsconfig.test.json && jest"
   },
   "files": [
     "lib"
@@ -38,7 +38,6 @@
   "devDependencies": {
     "@jest/globals": "^29.7.0",
     "jest": "^29.7.0",
-    "ts-jest": "^29.4.12",
-    "typescript": "^6.0.3"
+    "typescript": "^7.0.2"
   }
 }
