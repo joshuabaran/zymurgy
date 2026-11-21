@@ -10,11 +10,11 @@ export type WaterSalt = 'bakingSoda' | 'gypsum' | 'calciumChloride' | 'epsom' | 
 export declare const RO_WATER: Readonly<WaterIons>;
 export declare const LITERS_PER_US_GAL = 3.785411784;
 export declare const WATER_SALT_FORMULA: Readonly<{
-    readonly bakingSoda: "NaHCO3";
-    readonly gypsum: "CaSO4·2H2O";
-    readonly calciumChloride: "CaCl2·2H2O";
-    readonly epsom: "MgSO4·7H2O";
-    readonly chalk: "CaCO3";
+    readonly bakingSoda: 'NaHCO3';
+    readonly gypsum: 'CaSO4·2H2O';
+    readonly calciumChloride: 'CaCl2·2H2O';
+    readonly epsom: 'MgSO4·7H2O';
+    readonly chalk: 'CaCO3';
 }>;
 export declare const SALT_PPM_PER_G_PER_GAL: Readonly<Record<WaterSalt, Readonly<WaterIons>>>;
 export declare const DEFAULT_LACTIC_STRENGTH_PERCENT = 88;

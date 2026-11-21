@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.6.1
+
+- Compile with TypeScript 7.0.2. Tests are emitted by `tsc` and run by Jest 30. `ts-jest` is removed
+- `WATER_SALT_FORMULA` strings in `lib/water.d.ts` use single quotes
+
 ## 1.6.0
 
 - Yeast starter module (`starter.ts`): `targetCells` / `pitchRateFor`, `liquidYeastViability`, `dmeForGravity` / `starterGravity`, `starterGrowthPerGram` / `starterGrowth`
